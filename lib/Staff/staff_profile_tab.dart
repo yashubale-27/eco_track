@@ -20,19 +20,11 @@ class StaffProfileTab extends StatelessWidget {
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 30),
-
             ElevatedButton(
               onPressed: () async {
                 await FirebaseAuth.instance.signOut();
-
-                // 🔥 CRITICAL: reset navigation stack
-                if (!context.mounted) return;
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/',
-                      (route) => false,
-                );
               },
-              child: const Text('Logout'),
+              child: const Text("Logout"),
             ),
           ],
         ),

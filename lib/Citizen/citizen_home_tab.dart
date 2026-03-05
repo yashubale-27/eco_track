@@ -20,6 +20,7 @@ class CitizenHomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
@@ -27,9 +28,9 @@ class CitizenHomeTab extends StatelessWidget {
         title: const Text("Eco Track"),
         centerTitle: true,
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(16),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -58,16 +59,20 @@ class CitizenHomeTab extends StatelessWidget {
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('reports')
-                    .where('citizenId', isEqualTo: user!.uid)
+                    .where('userId', isEqualTo: user!.uid)
                     .orderBy('createdAt', descending: true)
                     .snapshots(),
+
                 builder: (context, snapshot) {
 
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                  if (snapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return const Center(
+                        child: CircularProgressIndicator());
                   }
 
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  if (!snapshot.hasData ||
+                      snapshot.data!.docs.isEmpty) {
                     return const Center(
                       child: Text("No complaints reported yet"),
                     );
@@ -79,12 +84,16 @@ class CitizenHomeTab extends StatelessWidget {
                     itemCount: reports.length,
                     itemBuilder: (context, index) {
 
-                      final data = reports[index].data() as Map<String, dynamic>;
+                      final data =
+                      reports[index].data() as Map<String, dynamic>;
+
                       final status = data['status'] ?? 'pending';
 
                       return Card(
                         elevation: 2,
-                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        margin:
+                        const EdgeInsets.symmetric(vertical: 6),
+
                         child: ListTile(
 
                           leading: const Icon(
@@ -93,21 +102,33 @@ class CitizenHomeTab extends StatelessWidget {
                           ),
 
                           title: Text(
-                            "Location: ${data['latitude']}, ${data['longitude']}",
-                            style: const TextStyle(fontSize: 14),
+                            data['description'] ?? "No Description",
+                            style: const TextStyle(fontSize: 15),
                           ),
 
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 5),
-                            child: Text(
-                              status.toUpperCase(),
-                              style: TextStyle(
-                                color: getStatusColor(status),
-                                fontWeight: FontWeight.bold,
+                          subtitle: Column(
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                            children: [
+
+                              const SizedBox(height: 5),
+
+                              Text(
+                                "Location: ${data['locationName'] ?? ''}",
+                                style: const TextStyle(fontSize: 13),
                               ),
-                            ),
-                          ),
 
+                              const SizedBox(height: 5),
+
+                              Text(
+                                status.toUpperCase(),
+                                style: TextStyle(
+                                  color: getStatusColor(status),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },

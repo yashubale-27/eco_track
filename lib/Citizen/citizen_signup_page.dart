@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'citizen_dashboard.dart';
 import '../services/firestore_service.dart';
 
 class CitizenSignupPage extends StatefulWidget {
@@ -61,16 +60,21 @@ class _CitizenSignupPageState extends State<CitizenSignupPage> {
       ),
     );
   }
+
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
+
     setState(() => isLoading = true);
+
     try {
       final userCredential =
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+
       final user = userCredential.user;
+
       if (user != null) {
         await FirestoreService.saveUserProfile(
           name: 'Citizen',
@@ -78,13 +82,6 @@ class _CitizenSignupPageState extends State<CitizenSignupPage> {
           role: 'citizen',
         );
       }
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const CitizenDashboard(),
-        ),
-      );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -97,7 +94,6 @@ class _CitizenSignupPageState extends State<CitizenSignupPage> {
       }
     }
   }
-  // 📧 Email Field
   Widget _emailField() {
     return TextFormField(
       controller: emailController,
@@ -115,7 +111,6 @@ class _CitizenSignupPageState extends State<CitizenSignupPage> {
     );
   }
 
-  // 🔒 Password Field
   Widget _passwordField() {
     return TextFormField(
       controller: passwordController,
@@ -130,7 +125,6 @@ class _CitizenSignupPageState extends State<CitizenSignupPage> {
     );
   }
 
-  // 🔒 Confirm Password Field
   Widget _confirmPasswordField() {
     return TextFormField(
       controller: confirmPasswordController,

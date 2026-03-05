@@ -138,15 +138,7 @@ class _CitizenLoginPageState extends State<CitizenLoginPage> {
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
-
-      if (!mounted) return;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const CitizenDashboard(),
-        ),
-      );
+      // ❌ DO NOT navigate
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.message ?? 'Login failed')),
@@ -159,16 +151,8 @@ class _CitizenLoginPageState extends State<CitizenLoginPage> {
   // 🔵 Google Login (SAVE Firestore profile once)
   Future<void> _googleLogin() async {
     try {
-      final result = await GoogleAuthService.signInWithGoogle();
-      final user = result?.user;
-      if (!mounted) return;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const CitizenDashboard(),
-        ),
-      );
+      await GoogleAuthService.signInWithGoogle();
+      // ❌ No navigation
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Google Sign-In failed")),
