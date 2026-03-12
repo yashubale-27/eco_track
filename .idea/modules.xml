@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/eco_track.iml" filepath="$PROJECT_DIR$/eco_track.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/eco_track_android.iml" filepath="$PROJECT_DIR$/android/eco_track_android.iml" />
     </modules>
   </component>
 </project>

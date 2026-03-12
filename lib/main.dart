@@ -9,11 +9,14 @@ import 'Citizen/citizen_dashboard.dart';
 import 'Citizen/citizen_login_page.dart';
 import 'Staff/staff_dashboard.dart';
 import 'Admin/admin_dashboard.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(const MyApp());
 }
 
@@ -34,6 +37,7 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
@@ -55,6 +59,7 @@ class AuthWrapper extends StatelessWidget {
               .collection('users')
               .doc(user.uid)
               .get(),
+
           builder: (context, roleSnapshot) {
 
             if (roleSnapshot.connectionState == ConnectionState.waiting) {
@@ -70,17 +75,19 @@ class AuthWrapper extends StatelessWidget {
             final data =
             roleSnapshot.data!.data() as Map<String, dynamic>;
 
-            final role = data['role']?.toString().toLowerCase();
+            final role = (data['role'] ?? 'citizen').toString().toLowerCase();
 
-            if (role == 'staff') {
-              return const StaffDashboard();
+            switch (role) {
+
+              case 'admin':
+                return const AdminDashboard();
+
+              case 'staff':
+                return const StaffDashboard();
+
+              default:
+                return const CitizenDashboard();
             }
-
-            if (role == 'admin') {
-              return const AdminDashboard();
-            }
-
-            return const CitizenDashboard();
           },
         );
       },

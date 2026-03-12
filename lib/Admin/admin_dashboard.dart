@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'admin_reports_tab.dart';
 import 'admin_stats_tab.dart';
+import 'admin_profile_tab.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -11,11 +12,12 @@ class AdminDashboard extends StatefulWidget {
 
 class _AdminDashboardState extends State<AdminDashboard> {
 
-  int index = 0;
+  int currentIndex = 0;
 
   final pages = const [
     AdminStatsTab(),
     AdminReportsTab(),
+    AdminProfileTab(),
   ];
 
   @override
@@ -24,15 +26,24 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Admin Dashboard"),
+        centerTitle: true,
       ),
 
-      body: pages[index],
+      body: pages[currentIndex],
 
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: index,
-        onTap: (i) => setState(() => index = i),
+        currentIndex: currentIndex,
+
+        onTap: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
+
+        selectedItemColor: Colors.green,
 
         items: const [
+
           BottomNavigationBarItem(
             icon: Icon(Icons.analytics),
             label: "Stats",
@@ -41,6 +52,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
             label: "Reports",
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: "Profile",
           ),
         ],
       ),

@@ -37,7 +37,7 @@ class _CitizenLoginPageState extends State<CitizenLoginPage> {
             ),
           ),
 
-          // 🪟 Glass Login Card
+          // Login Card
           Center(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(40),
@@ -56,7 +56,7 @@ class _CitizenLoginPageState extends State<CitizenLoginPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Text(
-                          'Citizen Login',
+                          'Login Page',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -71,7 +71,7 @@ class _CitizenLoginPageState extends State<CitizenLoginPage> {
                         _passwordField(),
                         const SizedBox(height: 20),
 
-                        // 🔐 Login Button
+                        //  Login Button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -91,7 +91,7 @@ class _CitizenLoginPageState extends State<CitizenLoginPage> {
 
                         const SizedBox(height: 10),
 
-                        // 🔵 Google Sign-In
+                        // google Sign-In
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
@@ -103,7 +103,7 @@ class _CitizenLoginPageState extends State<CitizenLoginPage> {
 
                         const SizedBox(height: 10),
 
-                        // ➕ Signup
+                        //  Signup
                         TextButton(
                           onPressed: () {
                             Navigator.push(
@@ -127,7 +127,6 @@ class _CitizenLoginPageState extends State<CitizenLoginPage> {
     );
   }
 
-  // 🔐 Email & Password Login (NO Firestore write)
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -138,7 +137,6 @@ class _CitizenLoginPageState extends State<CitizenLoginPage> {
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
-      // ❌ DO NOT navigate
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.message ?? 'Login failed')),

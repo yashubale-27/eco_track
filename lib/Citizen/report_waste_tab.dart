@@ -5,8 +5,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'dart:convert';
 import 'dart:math';
+import '../services/image_helper.dart';
 
 class ReportWasteTab extends StatefulWidget {
   const ReportWasteTab({super.key});
@@ -17,18 +17,16 @@ class ReportWasteTab extends StatefulWidget {
 
 class _ReportWasteTabState extends State<ReportWasteTab> {
 
-  final TextEditingController descriptionController =
-  TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
 
   bool isLoading = false;
+
+  File? imageFile;
+  final ImagePicker picker = ImagePicker();
 
   double? latitude;
   double? longitude;
   String locationName = "";
-
-  final ImagePicker _picker = ImagePicker();
-  File? _selectedImage;
-  String? _imageBase64;
 
   // 🔹 Generate Auto Report ID
   String generateReportId() {
@@ -39,8 +37,7 @@ class _ReportWasteTabState extends State<ReportWasteTab> {
   // 🔹 Get Live Location
   Future<void> getLiveLocation() async {
 
-    LocationPermission permission =
-    await Geolocator.requestPermission();
+    LocationPermission permission = await Geolocator.requestPermission();
 
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
@@ -71,18 +68,14 @@ class _ReportWasteTabState extends State<ReportWasteTab> {
   // 📷 Capture Image
   Future<void> captureImage() async {
 
-    final pickedFile = await _picker.pickImage(
+    final picked = await picker.pickImage(
       source: ImageSource.camera,
-      imageQuality: 60,
+      imageQuality: 50,
     );
 
-    if (pickedFile != null) {
-
-      final bytes = await pickedFile.readAsBytes();
-
+    if (picked != null) {
       setState(() {
-        _selectedImage = File(pickedFile.path);
-        _imageBase64 = base64Encode(bytes);
+        imageFile = File(picked.path);
       });
     }
   }
@@ -99,14 +92,14 @@ class _ReportWasteTabState extends State<ReportWasteTab> {
 
     if (latitude == null || longitude == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please get live location")),
+        const SnackBar(content: Text("Please get location")),
       );
       return;
     }
 
-    if (_imageBase64 == null) {
+    if (imageFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please capture a photo")),
+        const SnackBar(content: Text("Capture waste photo")),
       );
       return;
     }
@@ -115,26 +108,30 @@ class _ReportWasteTabState extends State<ReportWasteTab> {
 
     try {
 
+      final compressedImage =
+      await ImageHelper.compressImage(imageFile!);
+
       await FirebaseFirestore.instance
           .collection('reports')
           .add({
+
         'reportId': generateReportId(),
         'description': descriptionController.text.trim(),
         'locationName': locationName,
         'latitude': latitude,
         'longitude': longitude,
-        'image': _imageBase64,
+        'beforeImage': compressedImage,
         'status': 'pending',
         'userId': FirebaseAuth.instance.currentUser!.uid,
         'createdAt': Timestamp.now(),
+
       });
 
       descriptionController.clear();
       latitude = null;
       longitude = null;
       locationName = "";
-      _selectedImage = null;
-      _imageBase64 = null;
+      imageFile = null;
 
       if (!mounted) return;
 
@@ -212,9 +209,9 @@ class _ReportWasteTabState extends State<ReportWasteTab> {
           const SizedBox(height: 12),
 
           // 🖼 Image Preview
-          if (_selectedImage != null)
+          if (imageFile != null)
             Image.file(
-              _selectedImage!,
+              imageFile!,
               height: 200,
               fit: BoxFit.cover,
             ),
@@ -224,9 +221,7 @@ class _ReportWasteTabState extends State<ReportWasteTab> {
           ElevatedButton(
             onPressed: isLoading ? null : submitReport,
             child: isLoading
-                ? const CircularProgressIndicator(
-              color: Colors.white,
-            )
+                ? const CircularProgressIndicator(color: Colors.white)
                 : const Text("Submit Report"),
           ),
         ],

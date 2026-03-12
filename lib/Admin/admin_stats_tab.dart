@@ -1,83 +1,113 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class AdminStatsTab extends StatelessWidget {
+class AdminStatsTab extends StatefulWidget {
   const AdminStatsTab({super.key});
 
-  Future<Map<String, int>> fetchStats() async {
+  @override
+  State<AdminStatsTab> createState() => _AdminStatsTabState();
+}
 
-    final reports = await FirebaseFirestore.instance
-        .collection('reports')
-        .get();
+class _AdminStatsTabState extends State<AdminStatsTab> {
 
-    int pending = 0;
-    int assigned = 0;
-    int completed = 0;
+  int pending = 0;
+  int assigned = 0;
+  int completed = 0;
 
-    for (var doc in reports.docs) {
+  bool loading = true;
 
-      final status = doc['status'];
+  @override
+  void initState() {
+    super.initState();
+    fetchStats();
+  }
 
-      if (status == 'pending') pending++;
-      if (status == 'assigned') assigned++;
-      if (status == 'completed') completed++;
+  Future<void> fetchStats() async {
+
+    try {
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('reports')
+          .get();
+
+      int p = 0;
+      int a = 0;
+      int c = 0;
+
+      for (var doc in snapshot.docs) {
+
+        final data = doc.data();
+        final status = data['status'];
+
+        if (status == 'pending') p++;
+        if (status == 'assigned') a++;
+        if (status == 'completed') c++;
+      }
+
+      setState(() {
+        pending = p;
+        assigned = a;
+        completed = c;
+        loading = false;
+      });
+
+    } catch (e) {
+
+      setState(() {
+        loading = false;
+      });
+
+      debugPrint("Error loading stats: $e");
     }
+  }
 
-    return {
-      "pending": pending,
-      "assigned": assigned,
-      "completed": completed
-    };
+  Widget statCard(String title, int count, Color color) {
+
+    return Card(
+      elevation: 3,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+
+      child: ListTile(
+        leading: Icon(Icons.bar_chart, color: color),
+
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 16),
+        ),
+
+        trailing: Text(
+          count.toString(),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
 
-    return FutureBuilder(
-      future: fetchStats(),
+    if (loading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
 
-      builder: (context, snapshot) {
+    return Padding(
+      padding: const EdgeInsets.all(20),
 
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      child: Column(
+        children: [
 
-        final stats = snapshot.data!;
+          statCard("Pending Complaints", pending, Colors.orange),
 
-        return Padding(
-          padding: const EdgeInsets.all(20),
+          statCard("Assigned Tasks", assigned, Colors.blue),
 
-          child: Column(
-            children: [
-
-              _card("Pending Complaints", stats['pending']!, Colors.orange),
-
-              const SizedBox(height: 20),
-
-              _card("Assigned Tasks", stats['assigned']!, Colors.blue),
-
-              const SizedBox(height: 20),
-
-              _card("Completed Cleanups", stats['completed']!, Colors.green),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _card(String title, int count, Color color) {
-
-    return Card(
-      child: ListTile(
-        leading: Icon(Icons.bar_chart, color: color),
-        title: Text(title),
-        trailing: Text(
-          count.toString(),
-          style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold),
-        ),
+          statCard("Completed Cleanups", completed, Colors.green),
+        ],
       ),
     );
   }
